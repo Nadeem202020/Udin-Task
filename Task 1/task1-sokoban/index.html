@@ -1,0 +1,112 @@
+<!-- Main HTML entry point for the Sokoban browser game project. -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sokoban</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>SOKOBAN</h1>
+
+      <section id="level-select">
+        <h2>Select a Level</h2>
+        <div id="level-cards"></div>
+      </section>
+
+      <section id="game-screen" hidden>
+        <div id="stats-bar" aria-live="polite">
+          <span id="level-name">Level: -</span>
+          <span id="stats">Moves: 0 Pushes: 0 Time: 00:00</span>
+        </div>
+
+        <div id="game-board" aria-label="Sokoban board"></div>
+
+        <div id="controls">
+          <button id="restart-btn" type="button">Restart</button>
+          <button id="undo-btn" type="button">Undo</button>
+          <button id="next-level-btn" type="button">Next Level</button>
+        </div>
+      </section>
+
+      <div id="win-screen" hidden>
+        <h2>Congratulations!</h2>
+        <p id="win-stats">Moves: 0 | Pushes: 0 | Time: 00:00</p>
+        <button id="win-next-level-btn" type="button">Next Level</button>
+      </div>
+    </main>
+
+    <script src="levels.js"></script>
+    <script src="game.js"></script>
+    <script>
+      (function initLayoutBindings() {
+        const levelSelect = document.getElementById("level-select");
+        const levelCards = document.getElementById("level-cards");
+        const gameScreen = document.getElementById("game-screen");
+        const levelName = document.getElementById("level-name");
+        const winScreen = document.getElementById("win-screen");
+
+        if (!window.LEVELS || !Array.isArray(window.LEVELS)) {
+          return;
+        }
+
+        window.LEVELS.forEach((level, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "level-card";
+          button.textContent = `${level.id}. ${level.name}`;
+          button.addEventListener("click", () => {
+            levelSelect.hidden = true;
+            gameScreen.hidden = false;
+            winScreen.hidden = true;
+            levelName.textContent = `Level: ${level.name}`;
+            loadLevel(index);
+          });
+          levelCards.appendChild(button);
+        });
+
+        // Auto-load first level on page load and hide level selector
+        if (window.LEVELS.length > 0) {
+          levelSelect.hidden = true;
+          gameScreen.hidden = false;
+          levelName.textContent = `Level: ${window.LEVELS[0].name}`;
+          loadLevel(0);
+        }
+
+        document.getElementById("restart-btn").addEventListener("click", () => {
+          winScreen.hidden = true;
+          loadLevel(state.level);
+        });
+
+        document.getElementById("undo-btn").addEventListener("click", () => {
+          undoMove();
+        });
+
+        function goNextLevel() {
+          const next = state.level + 1;
+          if (next < window.LEVELS.length) {
+            winScreen.hidden = true;
+            gameScreen.hidden = false;
+            levelName.textContent = `Level: ${window.LEVELS[next].name}`;
+            loadLevel(next);
+            return;
+          }
+
+          // last level completed: return to level selector
+          winScreen.hidden = true;
+          gameScreen.hidden = true;
+          levelSelect.hidden = false;
+        }
+
+        document
+          .getElementById("next-level-btn")
+          .addEventListener("click", goNextLevel);
+        document
+          .getElementById("win-next-level-btn")
+          .addEventListener("click", goNextLevel);
+      })();
+    </script>
+  </body>
+</html>
