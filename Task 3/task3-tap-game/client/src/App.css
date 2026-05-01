@@ -1,0 +1,38 @@
+/* Tailwind CSS will handle most styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@keyframes tapPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tap-button {
+  transform-origin: center;
+}
+
+.tap-button-pulse {
+  animation: tapPulse 0.2s ease-in-out;
+}
