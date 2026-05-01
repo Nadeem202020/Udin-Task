@@ -1,0 +1,14 @@
+.env
+node_modules/
+dist/
+build/
+*.log
+logs/
+pids/
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+mongodb-memory-server/
