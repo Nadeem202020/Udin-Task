@@ -4,13 +4,34 @@ const { requireRole } = require("../middleware/roles");
 const Level = require("../models/Level");
 const User = require("../models/User");
 
+const TILE_TO_SYMBOL = {
+  0: " ",
+  1: "#",
+  2: "@",
+  3: "$",
+  4: ".",
+  5: "*",
+  6: "+",
+};
+
+function normalizeMapData(mapData) {
+  return mapData.map((row) =>
+    row.map((tile) => {
+      if (typeof tile === "string") return tile;
+      return TILE_TO_SYMBOL[tile] ?? " ";
+    }),
+  );
+}
+
 function createLevelsRouter() {
   const router = express.Router();
 
   // GET /api/levels — public, returns all active levels
   router.get("/", async (req, res) => {
     try {
-      const levels = await Level.find({ isActive: true })
+      const levels = await Level.find({
+        $or: [{ isActive: true }, { is_active: true }],
+      })
         .sort({ createdAt: -1 })
         .populate("createdBy", "username");
 
@@ -21,6 +42,7 @@ function createLevelsRouter() {
         difficulty: level.difficulty,
         mapData: level.mapData,
         createdBy: level.createdBy ? level.createdBy.username : null,
+        isActive: Boolean(level.isActive ?? level.is_active),
       }));
 
       res.status(200).json(out);
@@ -49,6 +71,7 @@ function createLevelsRouter() {
         difficulty: level.difficulty,
         mapData: level.mapData,
         createdBy: level.createdBy ? level.createdBy.username : null,
+        isActive: Boolean(level.isActive ?? level.is_active),
       });
     } catch (err) {
       console.error(err);
@@ -102,7 +125,7 @@ function createLevelsRouter() {
         const level = await Level.create({
           name,
           difficulty,
-          mapData,
+          mapData: normalizeMapData(mapData),
           createdBy: req.user.id,
           isActive: true,
         });

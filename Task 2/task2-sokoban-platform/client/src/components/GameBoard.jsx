@@ -11,23 +11,34 @@ const TILE = {
   PLAYER_ON_GOAL: 6,
 };
 
-// Convert string-based map from API to numeric tile constants
+// Convert API map data into numeric tile constants for gameplay.
 const convertMapFromAPI = (stringMap) => {
   if (!stringMap || !Array.isArray(stringMap)) return [];
   return stringMap.map((row) =>
     row.map((tile) => {
-      if (typeof tile === "number") return tile; // already numeric
+      if (typeof tile === "number") return tile;
       switch (tile) {
-        case "#":
-          return TILE.WALL;
+        case "0":
         case " ":
           return TILE.EMPTY;
+        case "1":
+        case "#":
+          return TILE.WALL;
+        case "2":
         case "@":
           return TILE.PLAYER;
+        case "3":
         case "$":
           return TILE.BOX;
+        case "4":
         case ".":
           return TILE.GOAL;
+        case "5":
+        case "*":
+          return TILE.BOX_ON_GOAL;
+        case "6":
+        case "+":
+          return TILE.PLAYER_ON_GOAL;
         default:
           return TILE.EMPTY;
       }

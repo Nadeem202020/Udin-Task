@@ -52,6 +52,27 @@ export default function AdminPage() {
     );
   }
 
+  function createStarterPuzzle(w, h) {
+    const next = createEmptyGrid(w, h);
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (y === 0 || x === 0 || y === h - 1 || x === w - 1) {
+          next[y][x] = TILE.WALL;
+        }
+      }
+    }
+
+    if (h > 4 && w > 4) {
+      next[2][2] = TILE.PLAYER;
+      next[2][3] = TILE.BOX;
+      next[3][3] = TILE.GOAL;
+      next[2][4] = TILE.GOAL;
+    }
+
+    return next;
+  }
+
   async function fetchLevels() {
     setLoadingLevels(true);
     try {
@@ -133,7 +154,7 @@ export default function AdminPage() {
       await api.post("/levels", {
         name: levelName.trim(),
         difficulty,
-        map_data: grid,
+        mapData: grid,
       });
       setMessage("Level saved");
       setLevelName("");
@@ -145,6 +166,19 @@ export default function AdminPage() {
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to save level");
     }
+  }
+
+  function handleResetGrid() {
+    setGrid(createEmptyGrid(width, height));
+    setError(null);
+    setMessage(null);
+  }
+
+  function handleLoadTemplate() {
+    setGrid(createStarterPuzzle(width, height));
+    setError(null);
+    setMessage("Starter puzzle loaded");
+    setTimeout(() => setMessage(null), 2000);
   }
 
   async function handleDeactivate(id) {
@@ -233,6 +267,12 @@ export default function AdminPage() {
           </div>
 
           <div className="flex-1">
+            <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900">
+              Paint a valid puzzle with exactly one player, at least one box,
+              and the same number of goals as boxes. Use the starter template if
+              you want a quick valid layout.
+            </div>
+
             <div className="mb-3">
               <label className="block text-sm font-medium">Level Name</label>
               <input
@@ -267,6 +307,21 @@ export default function AdminPage() {
             )}
 
             <div>
+              <div className="mb-3 flex gap-2">
+                <button
+                  onClick={handleLoadTemplate}
+                  className="px-4 py-2 border border-blue-600 text-blue-600 rounded"
+                >
+                  Load Starter Puzzle
+                </button>
+                <button
+                  onClick={handleResetGrid}
+                  className="px-4 py-2 border rounded"
+                >
+                  Clear Grid
+                </button>
+              </div>
+
               <button
                 onClick={handleSave}
                 className="px-4 py-2 bg-blue-600 text-white rounded"
@@ -292,16 +347,18 @@ export default function AdminPage() {
                 <div>
                   <div className="font-semibold">{lvl.name}</div>
                   <div className="text-sm text-gray-600">
-                    {lvl.difficulty} — By {lvl.created_by || "unknown"}
+                    {lvl.difficulty} — By {lvl.createdBy || "unknown"}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`px-2 py-1 rounded text-sm ${lvl.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
-                  >
-                    {lvl.is_active ? "Active" : "Inactive"}
-                  </div>
-                  {lvl.is_active && (
+                  {typeof lvl.isActive === "boolean" && (
+                    <div
+                      className={`px-2 py-1 rounded text-sm ${lvl.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      {lvl.isActive ? "Active" : "Inactive"}
+                    </div>
+                  )}
+                  {lvl.isActive && (
                     <button
                       onClick={() => handleDeactivate(lvl.id)}
                       className="px-3 py-1 bg-red-500 text-white rounded"
